@@ -1,0 +1,65 @@
+name: Build
+
+on:
+  push:
+    branches:
+        - '**'
+  pull_request:
+    branches:
+        - '**'
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup gcc-arm 10.3
+      run: |
+        wget 'https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.xz' \
+            --no-verbose \
+            --output-document='./gcc-arm.tar.xz'
+        
+        tar --extract --file='./gcc-arm.tar.xz'
+        
+        mv './gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf' '/usr/share/gcc-arm'
+        
+        rm --force './gcc-arm.tar.xz'
+    - name: Setup gcc-aarch64 10.3
+      run: |
+        wget 'https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz' \
+            --no-verbose \
+            --output-document='./gcc-aarch64.tar.xz'
+        
+        tar --extract --file='./gcc-aarch64.tar.xz'
+        
+        mv './gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu' '/usr/share/gcc-arm64'
+        
+        rm --force './gcc-aarch64.tar.xz'
+    - name: Setup NDK r25-beta1
+      run: |
+        wget 'https://dl.google.com/android/repository/android-ndk-r25-beta1-linux.zip' \
+            --no-verbose \
+            --output-document='./android-ndk.zip'
+        
+        unzip './android-ndk.zip'
+        
+        mv './android-ndk-r25-beta1' '/usr/share/android-ndk'
+        
+        rm --force './android-ndk.zip'
+    - name: Set up Nim devel
+      uses: jiro4989/setup-nim-action@master
+      with:
+        nim-version: 'devel'
+    - uses: actions/checkout@main
+    - name: Build Unalix
+      env:
+        ANDROID_NDK: '/usr/share/android-ndk'
+        GCC_ARM: '/usr/share/gcc-arm'
+        GCC_ARM64: '/usr/share/gcc-arm64'
+      run: bash './scripts/buid_all.sh' > '/dev/null'
+    - uses: EndBug/add-and-commit@main
+      with:
+        add: 'lib'
+        default_author: github_actions
+        message: 'Nightly build'
