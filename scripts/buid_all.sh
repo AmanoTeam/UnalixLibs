@@ -34,12 +34,12 @@ export CCFLAGS="-s -w -Wfatal-errors -Os"
 export CXXFLAGS="-s -w -Wfatal-errors -Os"
 export HOST="$(gcc -dumpmachine)"
 
-wget 'https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.4.2.tar.gz' \
+wget 'https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.5.0.tar.gz' \
 	--output-document='libressl.tar.gz'
 
 tar --extract --file='libressl.tar.gz'
 
-mv 'libressl-3.4.2/' './libressl'
+mv 'libressl-3.5.0/' './libressl'
 
 patch --force --strip=0 --input="${LIBRESSL_PATCH}" --directory='./libressl'
 
